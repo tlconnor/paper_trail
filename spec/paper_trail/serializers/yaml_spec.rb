@@ -29,7 +29,12 @@ module PaperTrail
             allow(::YAML).to receive(:safe_load)
             described_class.load("string")
             expect(::YAML).to have_received(:safe_load)
-          # Psych 4+ implements .unsafe_load
+          elsif defined?(ActiveRecord::Base.use_yaml_unsafe_load) && !ActiveRecord::Base.use_yaml_unsafe_load
+            # Rails 5.2 / 6.0 / 6.1
+            allow(::YAML).to receive(:safe_load)
+            described_class.load("string")
+            expect(::YAML).to have_received(:safe_load)
+            # Psych 4+ implements .unsafe_load
           elsif ::YAML.respond_to?(:unsafe_load)
             allow(::YAML).to receive(:unsafe_load)
             described_class.load("string")

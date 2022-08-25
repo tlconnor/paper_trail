@@ -12,7 +12,7 @@ module PaperTrail
         if use_safe_load?
           ::YAML.safe_load(
             string,
-            permitted_classes: ::ActiveRecord.yaml_column_permitted_classes,
+            permitted_classes: yaml_column_permitted_classes,
             aliases: true
           )
         elsif ::YAML.respond_to?(:unsafe_load)
@@ -41,8 +41,27 @@ module PaperTrail
 
       # `use_yaml_unsafe_load` was added in 7.0.3.1, will be removed in 7.1.0?
       def use_safe_load?
-        defined?(ActiveRecord.use_yaml_unsafe_load) &&
+        if defined?(ActiveRecord.use_yaml_unsafe_load)
+          # Rails 7.0+
           !ActiveRecord.use_yaml_unsafe_load
+        elsif defined?(ActiveRecord::Base.use_yaml_unsafe_load)
+          # Rails 5.2.8.1, 6.0.5.1, 6.1.6.1
+          !ActiveRecord::Base.use_yaml_unsafe_load
+        else
+          false
+        end
+      end
+
+      def yaml_column_permitted_classes
+        if defined?(ActiveRecord.yaml_column_permitted_classes)
+          # Rails 7.0+
+          ActiveRecord.yaml_column_permitted_classes
+        elsif defined?(ActiveRecord::Base.yaml_column_permitted_classes)
+          # Rails 5.2.8.1, 6.0.5.1, 6.1.6.1
+          ActiveRecord::Base.yaml_column_permitted_classes
+        else
+          []
+        end
       end
     end
   end
